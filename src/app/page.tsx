@@ -1,3 +1,12 @@
-export default function Home() {
-  return <div className='container mx-auto mt-24 text-center'>Home Page</div>
+import { Suspense } from 'react'
+import HomeView from '../components/home/home-view'
+
+export default async function Home() {
+  return (
+    <div className='mx-auto my-6 max-w-md px-4'>
+      <Suspense>
+        <HomeView />
+      </Suspense>
+    </div>
+  )
 }
