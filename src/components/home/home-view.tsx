@@ -38,9 +38,14 @@ export default function HomeView() {
               <Link href='/profile'>Profile</Link>
             </Button>
             {hasAdminPermission && (
-              <Button variant='outline' asChild size='lg'>
-                <Link href='/admin'>Admin</Link>
-              </Button>
+              <>
+                <Button variant='outline' asChild size='lg'>
+                  <Link href='/organization'>Organization</Link>
+                </Button>
+                <Button variant='outline' asChild size='lg'>
+                  <Link href='/admin'>Admin</Link>
+                </Button>
+              </>
             )}
 
             <SignOutButton />

@@ -1,6 +1,11 @@
 'use server'
 
+import { db } from '@/db'
+import { user } from '@/db/schema'
 import { auth } from '@/lib/auth'
+import { eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export const signUp = async (email: string, password: string, name: string) => {
   try {
@@ -47,5 +52,28 @@ export const signIn = async (email: string, password: string) => {
       success: false,
       message: e.message || 'An unknown error occurred.'
     }
+  }
+}
+
+export const getCurrentUser = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
+  if (!session) {
+    redirect('/auth')
+  }
+
+  const currentUser = await db.query.user.findFirst({
+    where: eq(user.id, session.user.id)
+  })
+
+  if (!currentUser) {
+    redirect('/auth')
+  }
+
+  return {
+    ...session,
+    currentUser
   }
 }
