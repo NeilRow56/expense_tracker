@@ -24,8 +24,8 @@ import { authClient } from '@/lib/auth-client'
 import { toast } from 'sonner'
 
 const formSchema = z.object({
-  name: z.string().min(2).max(50),
-  slug: z.string().min(2).max(50)
+  name: z.string().min(2).max(50)
+  // slug: z.string().min(2).max(50)
 })
 
 type Props = {
@@ -43,17 +43,20 @@ function AddOrganizationDialog({ setOpen, open, organization }: Props) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      slug: ''
+      name: ''
     }
   })
   const { isSubmitting } = form.formState
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const slug = values.name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
     try {
       await authClient.organization.create({
         name: values.name,
-        slug: values.slug
+        slug
       })
 
       toast.success('Organization created successfully')
@@ -92,7 +95,7 @@ function AddOrganizationDialog({ setOpen, open, organization }: Props) {
                 className='space-y-4'
               >
                 <FormInput name='name' label='Name' control={form.control} />
-                <FormInput name='slug' label='Slug' control={form.control} />
+                {/* <FormInput name='slug' label='Slug' control={form.control} /> */}
               </form>
               <Field orientation='horizontal' className='justify-between'>
                 <Button
