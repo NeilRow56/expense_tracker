@@ -53,20 +53,21 @@ function AddOrganizationDialog({ setOpen, open, organization }: Props) {
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-    try {
-      await authClient.organization.create({
-        name: values.name,
-        slug
-      })
 
-      toast.success('Organization created successfully')
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to create organization')
-    } finally {
+    const res = await authClient.organization.create({
+      name: values.name,
+      slug
+    })
+
+    toast.success('Organization created successfully')
+
+    if (res.error) {
+      toast.error(res.error.message || 'Failed to create organization')
+    } else {
       router.refresh()
-      setOpen(false)
       form.reset()
+      setOpen(false)
+      await authClient.organization.setActive({ organizationId: res.data.id })
     }
   }
 

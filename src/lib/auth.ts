@@ -8,6 +8,9 @@ import { admin as adminPlugin } from 'better-auth/plugins/admin'
 import { organization } from 'better-auth/plugins/organization'
 import { nextCookies } from 'better-auth/next-js'
 import { Resend } from 'resend'
+import { getActiveOrganization } from '@/server-actions/organization'
+import { desc, eq } from 'drizzle-orm'
+import { member } from '@/db/schema'
 
 const resend = new Resend(process.env.RESEND_API_KEY as string)
 
@@ -58,6 +61,26 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60
+    }
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async userSession => {
+          const membership = await db.query.member.findFirst({
+            where: eq(member.userId, userSession.userId),
+            orderBy: desc(member.createdAt),
+            columns: { organizationId: true }
+          })
+
+          return {
+            data: {
+              ...userSession,
+              activeOrganizationId: membership?.organizationId
+            }
+          }
+        }
+      }
     }
   },
   database: drizzleAdapter(db, {
