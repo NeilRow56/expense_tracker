@@ -120,7 +120,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             className='w-full max-w-[150px] cursor-pointer dark:bg-blue-600 dark:text-white'
             disabled={isSubmitting}
           >
-            <LoadingSwap isLoading={isSubmitting}>Sign in</LoadingSwap>
+            <LoadingSwap isLoading={isSubmitting}>Sign up</LoadingSwap>
           </Button>
           <Button
             className='border-red-500'

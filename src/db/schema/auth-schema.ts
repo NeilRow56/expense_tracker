@@ -1,14 +1,4 @@
-import { relations, sql } from 'drizzle-orm'
-import {
-  pgTable,
-  pgEnum,
-  text,
-  timestamp,
-  boolean,
-  integer,
-  PgEnumColumn,
-  PgEnumObjectColumn
-} from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, integer } from 'drizzle-orm/pg-core'
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -21,13 +11,13 @@ export const user = pgTable('user', {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  twoFactorEnabled: boolean('two_factor_enabled').default(false),
   role: text('role'),
   banned: boolean('banned').default(false),
   banReason: text('ban_reason'),
-  banExpires: timestamp('ban_expires')
+  banExpires: timestamp('ban_expires'),
+  stripeCustomerId: text('stripe_customer_id')
 })
-
-export type User = typeof user.$inferSelect
 
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
@@ -79,25 +69,13 @@ export const verification = pgTable('verification', {
 })
 
 export const organization = pgTable('organization', {
-  id: text('id')
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
+  id: text('id').primaryKey(),
   name: text('name').notNull(),
-  slug: text('slug').notNull().unique(),
+  slug: text('slug').unique(),
   logo: text('logo'),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').notNull(),
   metadata: text('metadata')
 })
-
-export const organizationRelations = relations(organization, ({ many }) => ({
-  members: many(member)
-}))
-
-export type Organization = typeof organization.$inferSelect
-
-export const role = pgEnum('role', ['member', 'admin', 'owner'])
-
-export type Role = (typeof role.enumValues)[number]
 
 export const member = pgTable('member', {
   id: text('id').primaryKey(),
@@ -110,21 +88,6 @@ export const member = pgTable('member', {
   role: text('role').default('member').notNull(),
   createdAt: timestamp('created_at').notNull()
 })
-
-export const memberRelations = relations(member, ({ one }) => ({
-  organization: one(organization, {
-    fields: [member.organizationId],
-    references: [organization.id]
-  }),
-  user: one(user, {
-    fields: [member.userId],
-    references: [user.id]
-  })
-}))
-
-export type Member = typeof member.$inferSelect & {
-  user: typeof user.$inferSelect
-}
 
 export const invitation = pgTable('invitation', {
   id: text('id').primaryKey(),

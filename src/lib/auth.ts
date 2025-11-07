@@ -7,10 +7,10 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin as adminPlugin } from 'better-auth/plugins/admin'
 import { organization } from 'better-auth/plugins/organization'
 import { nextCookies } from 'better-auth/next-js'
+import { ac, admin, user } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
+
 import { getActiveOrganization } from '@/server-actions/organization'
-import { desc, eq } from 'drizzle-orm'
-import { member } from '@/db/schema'
 
 const resend = new Resend(process.env.RESEND_API_KEY as string)
 
@@ -66,17 +66,12 @@ export const auth = betterAuth({
   databaseHooks: {
     session: {
       create: {
-        before: async userSession => {
-          const membership = await db.query.member.findFirst({
-            where: eq(member.userId, userSession.userId),
-            orderBy: desc(member.createdAt),
-            columns: { organizationId: true }
-          })
-
+        before: async session => {
+          const organization = await getActiveOrganization(session.userId)
           return {
             data: {
-              ...userSession,
-              activeOrganizationId: membership?.organizationId
+              ...session,
+              activeOrganizationId: organization?.id
             }
           }
         }
@@ -86,7 +81,17 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg'
   }),
-  plugins: [adminPlugin(), organization(), nextCookies()]
+  plugins: [
+    adminPlugin({
+      ac,
+      roles: {
+        admin,
+        user
+      }
+    }),
+    organization(),
+    nextCookies()
+  ]
 })
 
 export type ErrorCode = keyof typeof auth.$ERROR_CODES | 'UNKNOWN'

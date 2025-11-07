@@ -1,0 +1,61 @@
+'use client'
+
+import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { authClient } from '@/lib/auth-client'
+import { User } from '@/db/schema/auth-schema'
+import { Button } from '@/components/ui/button'
+import { addMember } from '@/server-actions/members'
+
+interface AllUsersProps {
+  users: User[]
+  organizationId: string
+}
+
+export default function AllUsers({ users, organizationId }: AllUsersProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+
+  const handleAddMember = async (userId: string) => {
+    try {
+      setIsLoading(true)
+      await addMember(userId, organizationId, 'member')
+      setIsLoading(false)
+      toast.success('Member added to organization')
+      router.refresh()
+    } catch (error) {
+      toast.error('Failed to add member to organization')
+      console.log(error)
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className='flex flex-col gap-2'>
+        {users.map(user => (
+          <div key={user.id}>
+            <div className='flex items-center justify-between space-x-4'>
+              <div className='w-full'>{user.name}</div>
+              <Button
+                onClick={() => handleAddMember(user.id)}
+                disabled={isLoading}
+                className='text-xs'
+              >
+                {isLoading ? (
+                  <Loader2 className='size-4 animate-spin' />
+                ) : (
+                  'Add to organization'
+                )}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

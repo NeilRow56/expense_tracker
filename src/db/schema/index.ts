@@ -6,6 +6,5 @@ export {
   verification,
   organization,
   member,
-  invitation,
-  subscription
+  invitation
 } from '@/db/schema/auth-schema'

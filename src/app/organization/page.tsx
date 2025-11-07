@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { ModeSwitcher } from '@/components/shared/mode-switcher'
 import { OrganizationSwitcher } from './_components/organization-switcher'
 import { SignOutButton } from '../auth/_components/sign-out-button'
+import { OrganizationTabs } from './_components/organization-tabs'
 
 export default async function OrganizationPage() {
   return (
@@ -74,7 +75,7 @@ async function DynamicContent() {
           <AddOrganizationButton />
         </div>
         <div className='flex flex-col items-start gap-2'>
-          <h2 className='font-bold'>List of organizations:</h2>
+          <h2 className='text-2xl font-bold'>List of organizations:</h2>
           {organizations.map(organization => (
             <Button
               className='w-full'
@@ -88,6 +89,7 @@ async function DynamicContent() {
             </Button>
           ))}
         </div>
+        <OrganizationTabs />
       </div>
     </>
   )
